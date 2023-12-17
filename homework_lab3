@@ -1,0 +1,49 @@
+import cv2
+import numpy as np
+
+def find_laser_center(image_path):
+    # Загрузка изображения
+    img = cv2.imread(image_path)
+
+    # Преобразование в цветовое пространство HSV
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+   # Определение произвольных значений цветового диапазона лазерного пятна
+    HUE_MIN, HUE_MAX = 0, 255
+    SATURATION_MIN, SATURATION_MAX = 150, 255
+    VALUE_MIN, VALUE_MAX = 150, 255
+
+# Создание маски изображения
+    lower_color = np.array([HUE_MIN, SATURATION_MIN, VALUE_MIN], dtype=np.uint8)
+    upper_color = np.array([HUE_MAX, SATURATION_MAX, VALUE_MAX], dtype=np.uint8)
+
+# Применение бинарной маски
+    mask = cv2.inRange(hsv, lower_color, upper_color)
+
+
+    # Нахождение контуров лазерного пятна
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if contours:
+        # Находим центр масс
+        M = cv2.moments(contours[0])
+        cx = int(M["m10"] / M["m00"])
+        cy = int(M["m01"] / M["m00"])
+
+        # Маркировка центра на изображении
+        cv2.circle(img, (cx, cy), 5, (0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU), -1)
+
+        # Визуализация
+        cv2.imshow("Laser Center", img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+        return cx, cy
+    else:
+        print("Контур лазерного пятна не найден.")
+        return None
+
+# Пример использования
+image_path = "img_1.jpeg"
+laser_center = find_laser_center(image_path)
+print("Центр лазерного пятна:", laser_center)
