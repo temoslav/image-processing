@@ -1,0 +1,55 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage import io
+
+def segment_contrast_object(image):
+    # 1. Переведем изображение в цветовое пространство HSV
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # 2. Проанализируем гистограмму изображения и выберем пороговые значения
+    hist, bins = np.histogram(hsv_image[:, :, 2].ravel(), 256, [0, 256])
+    min_threshold = np.argmax(hist > 0)
+    max_threshold = np.argmax(hist > 0) + 30  # Подберите оптимальное значение
+
+    # 3. Применим пороговую обработку для сегментации контрастного объекта
+    binary_image = cv2.inRange(hsv_image[:, :, 2], np.array([min_threshold]), np.array([max_threshold]))
+
+    # 4. Обнаружим границы с помощью фильтра Кэнни
+    blurred_image = cv2.GaussianBlur(image, (5, 5), 0)
+    edges_canny = cv2.Canny(blurred_image, 50, 150)
+
+    # 5. Применим алгоритм выделения границ с помощью вычетания
+    blurred_gaussian = cv2.GaussianBlur(image, (49, 49), 0)
+    edges_subtraction = cv2.subtract(image, blurred_gaussian)
+
+    return binary_image, edges_canny, edges_subtraction
+
+if __name__ == "__main__":
+    # Прочитаем изображение
+    url = "https://i.pinimg.com/originals/be/09/92/be0992731927cdcc9d1390a1ab587333.png"
+    image = io.imread(url)
+
+    # Получим результаты сегментации и обнаружения границ
+    segmented_image, edges_canny, edges_subtraction = segment_contrast_object(image)
+
+    # Визуализируем результаты
+    plt.figure(figsize=(12, 8))
+
+    plt.subplot(2, 3, 1)
+    plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    plt.title("Original Image")
+
+    plt.subplot(2, 3, 2)
+    plt.imshow(segmented_image, cmap="gray")
+    plt.title("Segmented Image")
+
+    plt.subplot(2, 3, 3)
+    plt.imshow(edges_canny, cmap="gray")
+    plt.title("Canny Edges")
+
+    plt.subplot(2, 3, 4)
+    plt.imshow(edges_subtraction)
+    plt.title("Edges Subtraction")
+
+    plt.show()
