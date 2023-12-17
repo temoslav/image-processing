@@ -43,7 +43,6 @@ def find_laser_center(image_path):
         print("Контур лазерного пятна не найден.")
         return None
 
-# Пример использования
 image_path = "img_1.jpeg"
 laser_center = find_laser_center(image_path)
 print("Центр лазерного пятна:", laser_center)
