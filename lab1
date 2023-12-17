@@ -1,0 +1,75 @@
+import cv2
+import numpy as np 
+import matplotlib.pyplot as plt 
+from skimage import io
+
+def apply_gaussian_filter(input_image, kernel_size=(5, 5), sigma=0):
+    """
+    Apply a Gaussian filter to an image.
+
+    Parameters:
+    - input_image (numpy.ndarray): Input image as a NumPy array.
+    - kernel_size (tuple): Size of the Gaussian kernel (width, height).
+    - sigma (float): Standard deviation of the Gaussian kernel.
+
+    Returns:
+    - filtered_image (numpy.ndarray): Filtered image.
+    """
+    # Apply Gaussian filter
+    blurred_img = cv2.GaussianBlur(input_image, kernel_size, sigma)
+    return blurred_img
+
+def apply_colormap(input_image, colormap=cv2.COLORMAP_JET):
+    """
+    Apply a colormap to a grayscale image.
+
+    Parameters:
+    - input_image (numpy.ndarray): Input image as a NumPy array.
+    - colormap (int): OpenCV colormap to apply.
+
+    Returns:
+    - colored_image (numpy.ndarray): Image with applied colormap.
+    """
+    return cv2.applyColorMap(input_image, colormap)
+
+if __name__ == "__main__":
+    image_height = 600
+    image_width = 800
+    dpi = 100
+
+    urls = [
+        f"https://i.pinimg.com/originals/be/09/92/be0992731927cdcc9d1390a1ab587333.png"
+    ]
+
+    images = list()
+    
+    for url in urls:
+        image = io.imread(url)
+        images.append(image)
+
+    img = images[0]
+
+    # Display the original image
+    plt.figure(figsize=(image_width/dpi, image_height/dpi), dpi=dpi)
+    plt.subplot(1, 3, 1)
+    plt.title("Original Image")
+    plt.imshow(img)
+
+    # Apply the simple filter
+    filtered_img_simple = images[0]
+    colored_img_for_simple=apply_colormap(filtered_img_simple, colormap=cv2.COLORMAP_JET)
+
+    # Display the image with the simple filter
+    plt.subplot(1, 3, 2)
+    plt.title("Simple Filter")
+    plt.imshow(colored_img_for_simple)
+
+    # Apply the Gaussian filter
+    filtered_img_gaussian = apply_gaussian_filter(img)
+
+    # Display the image with the Gaussian filter
+    plt.subplot(1, 3, 3)
+    plt.title("Gaussian Filter")
+    plt.imshow(filtered_img_gaussian, cmap="Blues")
+
+    plt.show()
